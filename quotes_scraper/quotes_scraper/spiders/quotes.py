@@ -12,8 +12,18 @@ class QuotesSpider(scrapy.Spider):
     ]
     # Si no se quiere poner en consola la especificación de creación de archivos podemos se puede crear un nuevo atributo 
     custom_settings = {
-        'FEED_URI': 'quotes.json',
-        'FEED_FORMAT': 'json'
+        'FEEDS': {
+            'quotes.json': {
+                'format': 'json',
+                'encoding': 'utf8',
+                'store_empty': False,
+                'fields': None,
+                'indent': 4,
+                'item_export_kwargs': {
+                    'export_empty_fields': True,
+                },
+            },
+        },
     }
 
     def parse(self, response):
