@@ -46,6 +46,11 @@ class QuotesSpider(scrapy.Spider):
 
         top_tags = response.xpath('//div[contains(@class, "tags-box")]/span[@class="tag-item"]/a/text()').extract()
 
+        top = getattr(self, 'top', None) # Se le pasa la instancia self, se busca 'top', si existe se guarda dentro de la variable top si el atributo no existe el resultado será None 
+        if top:
+            top = int(top)
+            top_tags = top_tags[:top]
+
         yield {
             'title': title,
             'top_tags': top_tags,
