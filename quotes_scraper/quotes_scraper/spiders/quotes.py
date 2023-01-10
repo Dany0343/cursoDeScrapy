@@ -26,6 +26,20 @@ class QuotesSpider(scrapy.Spider):
         },
     }
 
+
+    def parse_only_quotes(self, response, **kwargs):
+        if kwargs:
+            quotes = kwargs['quotes']
+        quotes.extend(response.xpath('//span[@class="text" and @itemprop="text"]/text()').extract()) # Se va a estar llenando cada vez dependiendo si existe o no next_page_button_link por el callback que se manda
+
+        next_page_button_link = response.xpath('//ul[@class="pager"]//li[@class="next"]/a/@href').get()
+        if next_page_button_link:
+            yield response.follow(next_page_button_link, callback=self.parse_only_quotes, cb_kwargs={'quotes': quotes})
+        else:
+            yield {
+                'quotes': quotes
+            } # Se regresa ya al final si la validación del next_áge_button_link fue falsa
+
     def parse(self, response):
         title = response.xpath('//h1/a/text()').get() # Se le pone get para obtener el titulo, ya que solo es uno
         quotes = response.xpath('//span[@class="text" and @itemprop="text"]/text()').extract()
@@ -34,11 +48,9 @@ class QuotesSpider(scrapy.Spider):
 
         yield {
             'title': title,
-            'quotes': quotes,
             'top_tags': top_tags,
         }
 
         next_page_button_link = response.xpath('//ul[@class="pager"]//li[@class="next"]/a/@href').get()
         if next_page_button_link:
-            yield response.follow(next_page_button_link, callback=self.parse) # Con solo poner la parte relativa de la dirección es suficiente '/page/2', response.follow lleva dos parametros, el link que nosotros vamos a seguir y un callback
-            # Un callback es una función que se va a ejecutar luego de hacer la request al link.
+            yield response.follow(next_page_button_link, callback=self.parse_only_quotes, cb_kwargs={'quotes': quotes})
