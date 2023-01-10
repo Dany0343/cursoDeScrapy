@@ -10,6 +10,11 @@ class QuotesSpider(scrapy.Spider):
     start_urls = [
         'http://quotes.toscrape.com/'
     ]
+    # Si no se quiere poner en consola la especificación de creación de archivos podemos se puede crear un nuevo atributo 
+    custom_settings = {
+        'FEED_URI': 'quotes.json',
+        'FEED_FORMAT': 'json'
+    }
 
     def parse(self, response):
         title = response.xpath('//h1/a/text()').get() # Se le pone get para obtener el titulo, ya que solo es uno
@@ -25,5 +30,5 @@ class QuotesSpider(scrapy.Spider):
 
         next_page_button_link = response.xpath('//ul[@class="pager"]//li[@class="next"]/a/@href').get()
         if next_page_button_link:
-            yield response.follow(next_page_button_link, callback) # Con solo poner la parte relativa de la dirección es suficiente '/page/2', response.follow lleva dos parametros, el link que nosotros vamos a seguir y un callback
+            yield response.follow(next_page_button_link, callback=self.parse) # Con solo poner la parte relativa de la dirección es suficiente '/page/2', response.follow lleva dos parametros, el link que nosotros vamos a seguir y un callback
             # Un callback es una función que se va a ejecutar luego de hacer la request al link.
